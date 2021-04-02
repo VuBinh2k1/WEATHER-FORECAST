@@ -14,4 +14,4 @@ End Project Date:
   - **Facebook:** [...](...)
   - **Email:** ...
 ## Project Planner
-- [ ] **Setup and using SFML library**
+- [x] **Setup and using SFML library**
