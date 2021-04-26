@@ -2,6 +2,10 @@
 #include <winsock2.h>
 #include <process.h>
 #pragma comment(lib, "ws2_32.lib" )
+#include "ServerSocket.h"
+#include "csv.h"
+
+using namespace sock;
 
 unsigned int __stdcall  ServClient(void *data);
 
@@ -37,7 +41,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		return 0;
 	}
 
-	while (client = accept(sock, 0, 0)) {
+	while (client = accept(sock, NULL, NULL)) {
 		if (client == INVALID_SOCKET) {
 			printf("invalid client socket", GetLastError());
 			continue;
@@ -56,41 +60,44 @@ unsigned int __stdcall ServClient(void* data) {
 	DWORD ClientID = GetCurrentThreadId();
 	printf("Client connected: %d\n", ClientID);
 
-	bool isLogin = 0;
-	int MsgSize = 0;
 	char ServerMsg[100];
-	char* tmp;
+	char* tmp = nullptr;
 
-	while (isLogin == FALSE) {
+	while (1) {
 		///CHECK CONNECTION TO CLIENT
-		MsgSize = strlen("CONNECT ?");
-		send(Client, (char*)&MsgSize, sizeof(int), 0);
-		send(Client, "CONNECT ?", MsgSize, 0);
-
-		recv(Client, (char*)&MsgSize, sizeof(int), 0);
-		tmp = new char[MsgSize + 1];
-		recv(Client, tmp, MsgSize, 0);
-		tmp[MsgSize] = '\0';
-
-		if (strcmp(tmp, "YES!\0")) break;
+		Send(Client, "CONNECT ?");
+		Recv(Client, tmp);
+		if (!is(tmp, "YES!")) {
+			printf("Client disconnected: %d\n", ClientID);
+			delete tmp;
+			break;
+		}
 		delete tmp;
 		///!CHECK CONNECTION TO CLIENT
 
-		strcpy(ServerMsg, "USER");
-		MsgSize = strlen(ServerMsg);
-		send(Client, (char*)&MsgSize, sizeof(int), 0);
-		send(Client, ServerMsg, MsgSize, 0);
 
-		recv(Client, (char*)&MsgSize, sizeof(int), 0);
-		tmp = new char[MsgSize + 1];
-		recv(Client, tmp, MsgSize, 0);
-		tmp[MsgSize] = '\0';
+		Send(Client, "USER");
+		Recv(Client, tmp);
 
-		if (strcmp(tmp, "LOG\0") == 0) {
+		if (is(tmp, "LOG")) {
+			printf("Login request: ");
+			if (Login(tmp)) {
+				//<LOGIN SUCCESS .. BREAK WHILE>
+				printf("success!\n");
+				Send(Client, "LOGIN_SUCCESS");
 
+				delete tmp;
+				break;		
+			}
+			printf("failed!\n");
+			//continue;
 		}
-		else if (strcmp(tmp, "REG\0") == 0) {
-			
+		if (is(tmp, "REG")) {
+			printf("Register request: ");
+
+
+			printf("failed!\n");
+			//continue;
 		}
 
 

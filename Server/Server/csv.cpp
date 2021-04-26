@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "csv.h"
 
+using file::csv;
+
 void csv::line::init(std::istream& inp) {
 	char temp[1000];
 	inp.getline(temp, 1000);
@@ -58,4 +60,22 @@ csv::csv(const char* FILE) {
 		data[i].id = i;
 	}
 	inp.close();
+}
+
+bool file::exists(const char* FILE) {
+	if (FILE == nullptr) return 0;
+	std::ifstream inp(FILE);
+	if (!inp.is_open()) return 0;
+	inp.close();
+	return 1;
+}
+
+csv::line* file::find(csv& file, const char* data1, const char* data2, bool status) {
+	for (int i = 0; i < file.rows; ++i) {
+		if (status && file.data[i].pdata[0][0] == '0') continue;
+		if (strcmp(file.data[i].pdata[1], data1) == 0) {
+			if (data2 == nullptr || strcmp(file.data[i].pdata[2], data2) == 0) return &file.data[i];
+		}
+	}
+	return nullptr;
 }

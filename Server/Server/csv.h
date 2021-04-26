@@ -5,30 +5,37 @@
 #include <iostream>
 #include <fstream>
 
-class csv {
-public:
-	class line {
-	public: 
-		int id;			// Location row
-	private:
-		int columns;	// Number of columns
-		char** pdata;
-		char* data;
+namespace file {
+
+	class csv {
+	public:
+		class line {
+		public:
+			int id;			// Location row
+		public:
+			int columns;	// Number of columns
+			char** pdata;
+			char* data;
+
+		public:
+			~line() { delete[] data; delete[] pdata; }
+			void init(std::istream& inp);
+			line& operator=(const line& x);
+		};
 
 	public:
-		~line() { delete[] data; delete[] pdata; }
-		void init(std::istream& inp);
-		line& operator=(const line& x);
+		int rows;			// Number of rows
+		line mark;
+		line* data;
+
+	public:
+		csv(const char* FILE);
+		~csv() { delete[] data; }
 	};
 
-private:
-	int rows;			// Number of rows
-	line mark;
-	line* data;
-	
-public:
-	csv(const char* FILE);
-	~csv() { delete[] data; }
-};
+
+	bool exists(const char* FILE);
+	csv::line* find(csv& file, const char* data1, const char* data2 = nullptr, bool status = FALSE);
+}
 
 #endif
