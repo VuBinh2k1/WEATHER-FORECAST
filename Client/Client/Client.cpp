@@ -2,7 +2,9 @@
 #include <winsock2.h>
 #include <iostream>
 #pragma comment(lib, "ws2_32.lib")
+#include "ClientSocket.h"
 
+using namespace sock;
 
 int _tmain(int argc, _TCHAR* argv[]) {
 
@@ -32,35 +34,68 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		return 0;
 	}
 
-	int MsgSize = 0;
 	char ClientMsg[100];
-	char* tmp;
+	char* tmp = nullptr;
 
-	int max = 5;
-	while (strcmp(ClientMsg, "EXIT")) {
-		recv(sock, (char*)&MsgSize, sizeof(int), 0);
-		tmp = new char[MsgSize + 1];
-		recv(sock, tmp, MsgSize, 0);
-		tmp[MsgSize] = '\0';
+	while (1) {
+		Recv(sock, tmp);
 
-		if (strcmp(tmp, "CONNECT ?\0") == 0) {
-			strcpy(ClientMsg, "YES!");
+		///CHECK CONNECTION FROM SERVER
+		if (is(tmp, "CONNECT ?")) {
+			Send(sock, "YES!");
+			continue;
 		}
-		else if (strcmp(tmp, "USER\0") == 0) {
+		///!CHECK CONNECTION FROM SERVER
+
+		if (is(tmp, "USER")) {
 			printf("Server: %s\n", tmp);
+			delete tmp;
 
 			printf("Client: ");
 			std::cin.getline(ClientMsg, 100);
-			if (strcmp(ClientMsg, "EXIT") == 0) break;
-		}
-		else {
-			break;
+			if (is(ClientMsg, "EXIT")) break;
+
+			if (is(ClientMsg, "LOG")) {
+				char username[50], password[50];
+				printf(" - USERNAME: ");
+				std::cin.getline(username, 100);
+				printf(" - PASSWORD: ");
+				std::cin.getline(password, 100);
+
+				strcat(ClientMsg, SEP);
+				strcat(ClientMsg, username); 
+				strcat(ClientMsg, SEP);
+				strcat(ClientMsg, password);
+			}
+
+			if (is(ClientMsg, "REG")) {
+				char username[50], password[50], confpass[50];
+				printf(" - USERNAME: ");
+				std::cin.getline(username, 100);
+				printf(" - PASSWORD: ");
+				std::cin.getline(password, 100);
+				printf(" - CONFIRM PASSWORD: ");
+				std::cin.getline(confpass, 100);
+
+				strcat(ClientMsg, SEP);
+				strcat(ClientMsg, username);
+				strcat(ClientMsg, SEP);
+				strcat(ClientMsg, password);
+				strcat(ClientMsg, SEP);
+				strcat(ClientMsg, confpass);
+			}
+
+			Send(sock, ClientMsg);
+			continue;
 		}
 
-		MsgSize = strlen(ClientMsg);
-		send(sock, (char*)&MsgSize, sizeof(int), 0);
-		send(sock, ClientMsg, MsgSize, 0);
-		delete tmp;
+		if (is(tmp, "LOGIN_SUCCESS")) {
+			printf("Server: Login success!\n");
+			delete tmp;
+			continue;
+		}
+
+		break;
 	}
 
 	closesocket(sock);
