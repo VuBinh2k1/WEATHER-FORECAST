@@ -5,12 +5,23 @@
 #pragma comment(lib, "ws2_32.lib" )
 #include <ctime>
 
-#define $Log		"..\\Data\\Log\\newest.log"
-#define SEP			"\t"		// use "\t" to split packet data
+#define EXIT		"EXIT"
+#define SERV_LOGIN	"USER"
+#define SERV_USER	"LOGIN_USER"
+#define SERV_ADMIN	"LOGIN_ADMIN"
+#define SERV_WAIT	"WHAT"
+#define SERV_SHUT	"SHUTDOWN"
+#define CLIE_LOGIN	"LOG"
+#define CLIE_SIGNIN	"REG"
+
+#define PATH_ACCOUNT	"..\\Data\\account.csv"
+#define $Log			"..\\Data\\Log\\lastest.log"
+#define SEP				"\t"		// use "\t" to split packet data
+
 #define RUNNING		1
 #define SHUTDOWN	0
 
-unsigned int __stdcall  ServClient(void* data);
+unsigned int __stdcall ServClient(void* data);
 unsigned int __stdcall ServAccept(void* data);
 
 namespace sock {
@@ -31,7 +42,7 @@ namespace sock {
 
 	void newLog(const char* text, int num = -1);
 
-	bool is(const char* input, const char* cmd = "EXIT", int flags = 0);
+	bool is(const char* input, const char* cmd = EXIT, int flags = 0);
 	void Send(SOCKET& s, const char* Msg, int flags = 0);
 	void Recv(SOCKET& s, char*& buff, int flags = 0);
 

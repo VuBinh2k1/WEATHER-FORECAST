@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "ServerSFML.h"
+#include "sha256.h"
 
 int _tmain(int argc, _TCHAR* argv[]) {
+	//*/
 	std::ofstream log($Log);
 	log.close();
 	 
@@ -10,7 +12,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 
 	gui.Init(&window);
 	gui.start();
-	
+	//*/
 
 	return 0;
 }
