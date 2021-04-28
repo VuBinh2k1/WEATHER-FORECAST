@@ -4,7 +4,6 @@
 #include "Picture.h"
 #include <fstream>
 
-#define $Log			"..\\Data\\Log\\newest.log"
 #define $Font			"..\\Data\\ClearSans-Bold.ttf"
 #define $Background		"..\\Data\\png\\background.png"
 #define $Button_start	"..\\Data\\png\\icon\\B_start.png"

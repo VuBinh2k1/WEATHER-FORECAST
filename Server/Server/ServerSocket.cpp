@@ -4,8 +4,6 @@
 #include "csv.h"
 #include "sha256.h"
 
-#define PATH_ACCOUNT "..\\Data\\account.csv"
-
 /// Thread function /////////////////////////////////////////////////////////
 unsigned int __stdcall ServAccept(void* data) {
 	SOCKET* server = (SOCKET*)data;
@@ -34,7 +32,7 @@ unsigned int __stdcall ServClient(void* data) {
 
 	/// Login...
 	do {
-		if (sock::ServerSocket::Status == SHUTDOWN || !sock::QConnect(Client)) {
+		if (!sock::QConnect(Client)) {
 			sock::newLog("Client disconnected: ", ClientID);
 			closesocket(Client);
 			return 0;
@@ -43,8 +41,8 @@ unsigned int __stdcall ServClient(void* data) {
 
 	/// 
 	do {
-		if (sock::ServerSocket::Status == SHUTDOWN || !sock::QConnect(Client)) {
-			sock::newLog("Client disconnected: ", ClientID);
+		if (!sock::QConnect(Client)) {
+			sock::newLog("Client disconnected 2: ", ClientID);
 			closesocket(Client);
 			return 0;
 		}
@@ -63,12 +61,10 @@ sock::ServerSocket::ServerSocket() {
 	addr.sin_port = htons(8612);
 	addr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
 
-
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData)) {	//2.2
 		sock::newLog("WSA startup failed");
 		return;
 	}
-
 }
 
 void sock::ServerSocket::Start() {
@@ -193,7 +189,30 @@ bool sock::Login(const char* data, int& Position) {
 	return 0;
 }
 
+bool sock::Register(const char* data) {
+	vector<string> vdata = Tokenizer::split(data, SEP);
+	if (vdata.size() != 4)return false;
+	if (!file::exists(PATH_ACCOUNT))return false;
+	if (vdata[3] != vdata[2])return false;
+	file::csv dataAccount(PATH_ACCOUNT);
+	if (file::find(dataAccount, vdata[1].c_str()) != nullptr)
+	{
+		return false;
+	}
+	//string sha256pass = sha256(vdata[2]);
+	std::ofstream out(PATH_ACCOUNT, std::ios::app);
+	out << "1," << vdata[1] << "," << sha256(vdata[2]) << ",user\n";
+	out.close();
+
+	return 1;
+}
+
 bool sock::QConnect(SOCKET& s) {
+	if (sock::ServerSocket::Status == SHUTDOWN) {
+		sock::Send(s, SERV_SHUT);
+		return 0;
+	}
+
 	char* tmp = nullptr;
 
 	Send(s, "CONNECT ?");
@@ -209,32 +228,34 @@ bool sock::QLogin(SOCKET& s) {
 	char* tmp = nullptr;
 	int Position = 0;	//0: user, 1: admin
 
-	Send(s, "USER");
+	Send(s, SERV_LOGIN);
 	Recv(s, tmp);
 
 	if (is(tmp, "LOG")) {
-		printf("Login request: ");
+		//printf("Login request: ");
 		if (Login(tmp, Position)) {
 			if (Position) {
-				printf("ADMIN success!\n");
-				Send(s, "LOGIN_SUCCESS\tADMIN");
+				Send(s, SERV_ADMIN);
 			}
 			else {
-				printf("USER success!\n");
-				Send(s, "LOGIN_SUCCESS\tUSER");
+				Send(s, SERV_USER);
 			}
 			delete tmp;
 			return 1;
 		}
 		
-		printf("failed!\n");
+		//printf("failed!\n");
 		delete tmp;
 		return 0;
 	}
 	if (is(tmp, "REG")) {
 		// password unconfirm, username is used
 		printf("Register request: ");
-
+		if (Register(tmp)) {
+			Send(s, SERV_USER);
+			delete tmp;
+			return 1;
+		}
 
 		printf("failed!\n");
 		delete tmp;

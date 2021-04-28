@@ -1,36 +1,114 @@
 #include "stdafx.h"
 #include "ClientSocket.h"
 
+/// Thread function /////////////////////////////////////////////////////////
+unsigned int __stdcall ClientRecv(void* data) {
+	SOCKET* client = (SOCKET*)data;
+	SOCKET Client = *client;
+
+	char* tmp = nullptr;
+
+	while (1) {
+		sock::Recv(Client, tmp);
+		printf("Server: %s\n", tmp);
+
+		if (sock::is(tmp, SERV_SHUT)) {
+			sock::ClientSocket::Status = DISCONNECT;
+			delete tmp;
+			return 0;
+		}
+
+		if (sock::is(tmp, "CONNECT ?")) {
+			sock::Send(Client, "YES!");
+			delete tmp;
+			continue;
+		}
+
+		if (sock::is(tmp, SERV_LOGIN)) {
+			sock::ClientSocket::cmd_to_gui = SERV_LOGIN;
+			delete tmp;
+
+			/// Waiting DATA from GUI
+			while (sock::ClientSocket::cmd_from_gui.empty()) Sleep(500);
+
+			std::string ClientMsg = sock::ClientSocket::cmd_from_gui;
+			sock::ClientSocket::cmd_from_gui.clear();
+			printf("Data: %s\n", ClientMsg.c_str());
+			sock::Send(Client, ClientMsg.c_str());
+
+			continue;
+			/// LOGIN GUI
+			//return ALogin(Client, tmp);
+		}
+
+		if (sock::is(tmp, SERV_USER) || sock::is(tmp, SERV_ADMIN)) {
+			sock::ClientSocket::cmd_to_gui = tmp;
+			delete tmp;
+			continue;
+		}
+
+		if (sock::is(tmp, "WHAT")) {
+			sock::ClientSocket::cmd_to_gui = tmp;
+
+			/// Waiting DATA from GUI
+			while (sock::ClientSocket::cmd_from_gui.empty()) Sleep(500);
+			std::string ClientMsg = sock::ClientSocket::cmd_from_gui;
+			sock::ClientSocket::cmd_from_gui.clear();
+
+			Sleep(3000);
+
+			sock::Send(Client, ClientMsg.c_str());
+			continue;
+			// USER:
+			// LIST [date]
+			// CITY <cityID>
+			// 
+			// ADMIN:
+			// UPDATE_CITY <cityID> <cityName>
+			// UPDATE_DATA <cityID> <date> <weather info>
+		}
+
+		break;
+	}
+}
+
 /// Class /////////////////////////////////////////////////////////
+int sock::ClientSocket::Status = DISCONNECT;
+std::string sock::ClientSocket::cmd_to_gui = "";
+std::string sock::ClientSocket::cmd_from_gui = "";
+
 sock::ClientSocket::ClientSocket() {
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(8612);
 	addr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
-
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData)) {
 		printf("WSA startup failed");
 		return;
 	}
 
-
-	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (sock == INVALID_SOCKET) {
-		printf("Invalid socket");
-		return;
-	}
-
-	if (connect(sock, (SOCKADDR*)&addr, sizeof(sockaddr_in))) {
-		printf("Connect failed %u", WSAGetLastError());
-		return;
-	}
-
+	Connect();
 }
 
 sock::ClientSocket::~ClientSocket() {
 	closesocket(sock);
 }
 
+bool sock::ClientSocket::Connect() {
+	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (sock == INVALID_SOCKET) {
+		printf("Invalid socket");
+		return 0;
+	}
+
+	if (connect(sock, (SOCKADDR*)&addr, sizeof(sockaddr_in))) {
+		printf("Connect failed %u", WSAGetLastError());
+		return 0;
+	}
+	
+	Status = CONNECTING;
+	_beginthreadex(0, 0, ClientRecv, (void*)&sock, 0, 0);
+}
 
 /// Function /////////////////////////////////////////////////////////
 bool sock::is(const char* input, const char* cmd, int flags) {
@@ -112,45 +190,7 @@ bool ALogin(SOCKET& s, char* data) {
 /// !HANDLING FUNCTION
 
 int sock::Handle(SOCKET& s) {
-	char* tmp = nullptr;
-
-	Recv(s, tmp);
-
-	if (is(tmp, "CONNECT ?")) {
-		Send(s, "YES!");
-		delete tmp;
-		return 1;
-	}
-
-	if (is(tmp, "USER")) {
-		/// LOGIN GUI
-		return ALogin(s, tmp);
-	}
-
-	if (is(tmp, "LOGIN_SUCCESS")) {
-		printf("Server: %s Login success!\n", tmp + 14);
-		if (is(tmp + 14, "USER")) {
-			/// PROGRAM GUI: NORMAL USER
-
-		}
-
-		if (is(tmp + 14, "ADMIN")) {
-			/// PROGRAM GUI: ADMIN
-		}
-		delete tmp;
-		return 1;
-	}
-
-	if (is(tmp, "WHAT")) {
-		// USER:
-		// LIST [date]
-		// CITY <cityID>
-		// 
-		// ADMIN:
-		// UPDATE_CITY <cityID> <cityName>
-		// UPDATE_DATA <cityID> <date> <weather info>
-		Send(s, "LIST");
-	}
+	
 
 	return 0;
 }

@@ -15,12 +15,12 @@ public:
 	sf::Vector2f getPosition();
 	void setTexture(const std::string& _texture);
 	void setTexture(const char* _texture);
-	template<class T> void setSize(std::pair<T, T> size) {
-		m_shape.setSize(sf::Vector2f(size.first, size.second));
+	template<class T> void setSize(T X, T Y) {
+		m_shape.setSize(sf::Vector2f(X, Y));
 		m_shape.setTextureRect(sf::IntRect(0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT));
 	}
-	template<class T> void setPosition(std::pair<T, T> pos) {
-		m_shape.setPosition(sf::Vector2f(pos.first, pos.second));
+	template<class T> void setPosition(T X, T Y) {
+		m_shape.setPosition(sf::Vector2f(X, Y));
 	}
 
 	bool clicked(sf::RenderWindow* window);

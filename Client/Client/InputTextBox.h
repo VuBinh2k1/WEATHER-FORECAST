@@ -9,6 +9,7 @@
 class InputTextBox {
 	int maxText;
 	int sizeText;
+	bool hideText;
 
 	sf::RectangleShape m_shape;
 	sf::Font font;
@@ -17,7 +18,11 @@ class InputTextBox {
 	sf::Color _click, _unclick, _text;
 
 public:
-	InputTextBox(int maxlen = 30, int sztext = 30);
+	InputTextBox(int maxlen = 30, int sztext = 30, bool hidetxt = 0);
+
+	std::string getText();
+	bool size();
+	void clear();
 
 	void setColor(sf::Color text_color, sf::Color click_color, sf::Color unclick_color);
 
