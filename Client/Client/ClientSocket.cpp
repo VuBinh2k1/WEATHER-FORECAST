@@ -1,6 +1,38 @@
 #include "stdafx.h"
 #include "ClientSocket.h"
 
+/// Class /////////////////////////////////////////////////////////
+sock::ClientSocket::ClientSocket() {
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(8612);
+	addr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+
+
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData)) {
+		printf("WSA startup failed");
+		return;
+	}
+
+
+	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (sock == INVALID_SOCKET) {
+		printf("Invalid socket");
+		return;
+	}
+
+	if (connect(sock, (SOCKADDR*)&addr, sizeof(sockaddr_in))) {
+		printf("Connect failed %u", WSAGetLastError());
+		return;
+	}
+
+}
+
+sock::ClientSocket::~ClientSocket() {
+	closesocket(sock);
+}
+
+
+/// Function /////////////////////////////////////////////////////////
 bool sock::is(const char* input, const char* cmd, int flags) {
 	if (flags == 1) return strcmp(input, cmd);
 	if (strlen(input) < strlen(cmd)) return 0;

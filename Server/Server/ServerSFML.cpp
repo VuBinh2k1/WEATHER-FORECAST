@@ -7,12 +7,6 @@ void ServerSFML::Init(RenderWindow* _win) {
 	window = _win;
 	font.loadFromFile($Font);
 
-	for (int i = 0; i < 7; ++i) {
-		std::string path = $Weather;
-		path += (i + '0');
-		path += ".png";
-		weather_icon[i].loadFromFile(path);
-	}
 	background.setTexture($Background);
 
 	windowLog.setFillColor(Color(0, 0, 0, 230));

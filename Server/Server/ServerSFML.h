@@ -7,7 +7,6 @@
 #define $Log			"..\\Data\\Log\\newest.log"
 #define $Font			"..\\Data\\ClearSans-Bold.ttf"
 #define $Background		"..\\Data\\png\\background.png"
-#define $Weather		"..\\Data\\png\\icon\\"
 #define $Button_start	"..\\Data\\png\\icon\\B_start.png"
 #define $Button_end		"..\\Data\\png\\icon\\B_end.png"
 
@@ -21,7 +20,6 @@ class ServerSFML {
 
 	RenderWindow* window;
 	Font font;
-	Texture weather_icon[7];
 	Picture background;
 	RectangleShape windowLog;
 	Button B_start, B_end;
