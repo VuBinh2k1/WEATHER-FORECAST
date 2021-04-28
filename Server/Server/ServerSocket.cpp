@@ -182,19 +182,21 @@ bool sock::Login(const char* data, int& Position) {
 	if (puser = file::find(dataAccount, vdata[1].c_str(), "0")) {
 		//Password reseted, confirm new password
 
-		Position = is(puser->pdata[3], "admin");
+		Position = is(puser->pdata[3], "admin"); 
 		return 1;
 	}
 
 	return 0;
 }
 
-bool sock::Register(const char* data) {
+bool sock::Register(const char* data)
+{
 	vector<string> vdata = Tokenizer::split(data, SEP);
 	if (vdata.size() != 4)return false;
 	if (!file::exists(PATH_ACCOUNT))return false;
 	if (vdata[3] != vdata[2])return false;
 	file::csv dataAccount(PATH_ACCOUNT);
+
 	if (file::find(dataAccount, vdata[1].c_str()) != nullptr)
 	{
 		return false;
@@ -252,6 +254,7 @@ bool sock::QLogin(SOCKET& s) {
 		// password unconfirm, username is used
 		printf("Register request: ");
 		if (Register(tmp)) {
+
 			Send(s, SERV_USER);
 			delete tmp;
 			return 1;
