@@ -7,7 +7,13 @@
 
 namespace sock {
 	class ClientSocket {
+		WSADATA wsaData;
+		sockaddr_in addr;
+		SOCKET sock, client;
 
+	public:
+		ClientSocket();
+		~ClientSocket();
 	};
 
 	bool is(const char* input, const char* cmd = "EXIT", int flags = 0);
