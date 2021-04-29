@@ -9,7 +9,7 @@
 #define SERV_LOGIN	"USER"
 #define SERV_USER	"LOGIN_USER"
 #define SERV_ADMIN	"LOGIN_ADMIN"
-#define SERV_WAIT	"WHAT"
+#define SERV_WAIT	"WHAT ?"
 #define SERV_SHUT	"SHUTDOWN"
 
 #define CONNECTING	1

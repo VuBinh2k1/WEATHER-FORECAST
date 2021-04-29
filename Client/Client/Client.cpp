@@ -9,13 +9,5 @@ int _tmain(int argc, _TCHAR* argv[]) {
 	gui.Init(&window);
 	gui.start();
 	//*/
-	
-
-	/*/
-	do {
-		
-	} while (Handle(sock));
-	//*/
-	
 	return 0;
 }

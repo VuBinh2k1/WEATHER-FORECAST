@@ -25,6 +25,7 @@ public:
 	void clear();
 
 	void setColor(sf::Color text_color, sf::Color click_color, sf::Color unclick_color);
+	void setText(std::string txt);
 
 	template<class T> void setSize(T x, T y) {
 		m_shape.setSize(sf::Vector2f(x, y));

@@ -10,7 +10,7 @@ unsigned int __stdcall ClientRecv(void* data) {
 
 	while (1) {
 		sock::Recv(Client, tmp);
-		printf("Server: %s\n", tmp);
+		//printf("Server: %s\n", tmp);
 
 		if (sock::is(tmp, SERV_SHUT)) {
 			sock::ClientSocket::Status = DISCONNECT;
@@ -33,12 +33,9 @@ unsigned int __stdcall ClientRecv(void* data) {
 
 			std::string ClientMsg = sock::ClientSocket::cmd_from_gui;
 			sock::ClientSocket::cmd_from_gui.clear();
-			printf("Data: %s\n", ClientMsg.c_str());
+			
 			sock::Send(Client, ClientMsg.c_str());
-
 			continue;
-			/// LOGIN GUI
-			//return ALogin(Client, tmp);
 		}
 
 		if (sock::is(tmp, SERV_USER) || sock::is(tmp, SERV_ADMIN)) {
@@ -47,25 +44,30 @@ unsigned int __stdcall ClientRecv(void* data) {
 			continue;
 		}
 
-		if (sock::is(tmp, "WHAT")) {
-			sock::ClientSocket::cmd_to_gui = tmp;
+		if (sock::is(tmp, SERV_WAIT)) {
+			sock::ClientSocket::cmd_to_gui = SERV_WAIT;
 
 			/// Waiting DATA from GUI
 			while (sock::ClientSocket::cmd_from_gui.empty()) Sleep(500);
+
 			std::string ClientMsg = sock::ClientSocket::cmd_from_gui;
 			sock::ClientSocket::cmd_from_gui.clear();
 
-			Sleep(3000);
-
 			sock::Send(Client, ClientMsg.c_str());
 			continue;
-			// USER:
-			// LIST [date]
-			// CITY <cityID>
-			// 
 			// ADMIN:
 			// UPDATE_CITY <cityID> <cityName>
 			// UPDATE_DATA <cityID> <date> <weather info>
+		}
+
+		if (sock::is(tmp, "CITY")) {
+			sock::ClientSocket::cmd_to_gui = tmp;
+
+			/// Time for GUI build data
+			while (sock::ClientSocket::cmd_from_gui.empty()) Sleep(500);
+			sock::ClientSocket::cmd_from_gui.clear();
+
+			continue;
 		}
 
 		break;
@@ -128,6 +130,7 @@ void sock::Send(SOCKET& s, const char* Msg, int flags) {
 	int MsgSize = strlen(Msg);
 	send(s, (char*)&MsgSize, sizeof(int), flags);
 	send(s, Msg, MsgSize, flags);
+	printf("Client: %s\n", Msg);
 }
 
 void sock::Recv(SOCKET& s, char*& buff, int flags) {
@@ -138,56 +141,8 @@ void sock::Recv(SOCKET& s, char*& buff, int flags) {
 	recv(s, buff, MsgSize, flags);
 
 	buff[MsgSize] = '\0';
+	printf("Server: %s\n", buff);
 }
-
-/// HANDLING FUNCTION
-bool ALogin(SOCKET& s, char* data) {
-	printf("Server: %s\n", data);
-	delete data;
-
-	char ClientMsg[100];
-
-	printf("Client: ");
-
-	///////////////////////////////////
-	std::cin.getline(ClientMsg, 100);
-	
-	if (sock::is(ClientMsg, "EXIT")) return 0;
-
-	if (sock::is(ClientMsg, "LOG")) {
-		char username[50], password[50];
-		printf(" - USERNAME: ");
-		std::cin.getline(username, 100);
-		printf(" - PASSWORD: ");
-		std::cin.getline(password, 100);
-
-		strcat(ClientMsg, SEP);
-		strcat(ClientMsg, username);
-		strcat(ClientMsg, SEP);
-		strcat(ClientMsg, password);
-	}
-
-	if (sock::is(ClientMsg, "REG")) {
-		char username[50], password[50], confpass[50];
-		printf(" - USERNAME: ");
-		std::cin.getline(username, 100);
-		printf(" - PASSWORD: ");
-		std::cin.getline(password, 100);
-		printf(" - CONFIRM PASSWORD: ");
-		std::cin.getline(confpass, 100);
-
-		strcat(ClientMsg, SEP);
-		strcat(ClientMsg, username);
-		strcat(ClientMsg, SEP);
-		strcat(ClientMsg, password);
-		strcat(ClientMsg, SEP);
-		strcat(ClientMsg, confpass);
-	}
-
-	sock::Send(s, ClientMsg);
-	return 1;
-}
-/// !HANDLING FUNCTION
 
 int sock::Handle(SOCKET& s) {
 	

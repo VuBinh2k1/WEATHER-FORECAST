@@ -79,3 +79,23 @@ csv::line* file::find(csv& file, const char* data1, const char* data2, bool stat
 	}
 	return nullptr;
 }
+
+int file::findWeather(csv& file, int startRow, const char* date, const char* city) {
+	for (int i = startRow; i < file.rows; ++i) {
+		
+		if (strcmp(file.data[i].pdata[1], date) == 0) {
+			if (city == nullptr || strcmp(file.data[i].pdata[0], city) == 0) 
+				return i;
+		}
+	}
+	return -1;
+}
+
+std::string file::findCity(csv& file, const char* citycode) {
+	for (int i = 0; i < file.rows; ++i) {
+		if (strcmp(file.data[i].pdata[0], citycode) == 0)
+				return file.data[i].pdata[1];
+	}
+
+	return "Unknow";
+}
