@@ -9,12 +9,14 @@
 #define SERV_LOGIN	"USER"
 #define SERV_USER	"LOGIN_USER"
 #define SERV_ADMIN	"LOGIN_ADMIN"
-#define SERV_WAIT	"WHAT"
+#define SERV_WAIT	"WHAT ?"
 #define SERV_SHUT	"SHUTDOWN"
 #define CLIE_LOGIN	"LOG"
 #define CLIE_SIGNIN	"REG"
 
 #define PATH_ACCOUNT	"..\\Data\\account.csv"
+#define PATH_WEATHER	"..\\Data\\data.csv"
+#define PATH_CITY		"..\\Data\\city.csv"
 #define $Log			"..\\Data\\Log\\lastest.log"
 #define SEP				"\t"		// use "\t" to split packet data
 
@@ -48,6 +50,7 @@ namespace sock {
 
 	bool Login(const char* data, int& Position);
 	bool Register(const char* data);
+	std::string City(const char* data);
 
 	/// Q:questtion(send) - A:answer(recv, send back)
 	bool QConnect(SOCKET& s);

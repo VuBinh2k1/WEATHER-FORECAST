@@ -1,5 +1,6 @@
 #pragma once
 #include "ClientSocket.h"
+#include "Tokenizer.h"
 #include "Button.h"
 #include "InputTextBox.h"
 #include "Picture.h"
@@ -9,12 +10,15 @@
 #define $Background		"..\\Data\\png\\background.png"
 #define $BG_Login		"..\\Data\\png\\login.png"
 #define $BG_Regis		"..\\Data\\png\\register.png"
+#define $BG_Users		"..\\Data\\png\\user.png"
+#define $BG_Admin		"..\\Data\\png\\admin.png"
 
 using namespace sf;
 using namespace sock;
 
 class LoginSFML;
 class RegisterSFML;
+class UserSFML;
 
 /// Main Window
 class ClientSFML {
@@ -23,13 +27,14 @@ public:
 
 	RenderWindow* window;
 	Font font;
-	Texture weather_icon[7];
+	//Texture weather_icon[7];
 	Picture background;
 
 public:
 	static int Log_Reg;
 	LoginSFML* win01;
 	RegisterSFML* win02;
+	UserSFML* win03;
 
 public:
 	ClientSFML();
@@ -69,6 +74,27 @@ class RegisterSFML {
 
 public:
 	RegisterSFML();
+
+	void Init(ClientSFML* main);
+	void start();
+
+	void render();
+};
+
+class UserSFML {
+	RenderWindow* window;
+	Font font;
+
+	Picture background;
+	InputTextBox m_city_code, m_date;
+	Button B_Search;
+
+	int show_row;
+	Text t_city, t_date, t_temp, t_humi, t_stat;
+	std::vector<std::string> show;
+
+public:
+	UserSFML();
 
 	void Init(ClientSFML* main);
 	void start();

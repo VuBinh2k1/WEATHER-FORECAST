@@ -46,7 +46,7 @@ unsigned int __stdcall ServClient(void* data) {
 			closesocket(Client);
 			return 0;
 		}
-	} while (1);
+	} while (sock::Handle(Client));
 
 	closesocket(Client);
 	return 0;
@@ -149,6 +149,7 @@ void sock::Send(SOCKET& s, const char* Msg, int flags) {
 	int MsgSize = strlen(Msg);
 	send(s, (char*)&MsgSize, sizeof(int), flags);
 	send(s, Msg, MsgSize, flags);
+	printf("Server: %s\n", Msg);
 }
 
 void sock::Recv(SOCKET& s, char*& buff, int flags) {
@@ -159,6 +160,7 @@ void sock::Recv(SOCKET& s, char*& buff, int flags) {
 	recv(s, buff, MsgSize, flags);
 
 	buff[MsgSize] = '\0';
+	printf("Client: %s\n", buff);
 }
 
 bool sock::Login(const char* data, int& Position) {
@@ -207,6 +209,81 @@ bool sock::Register(const char* data)
 	out.close();
 
 	return 1;
+}
+
+std::string ctime_to_string(std::tm* date) {
+	std::string data;
+	if (date->tm_mday < 10)
+		data = (std::string)"0" + std::to_string(date->tm_mday) + "/";
+	else data = std::to_string(date->tm_mday) + "/";
+
+
+	if (date->tm_mon < 9)
+		data += (std::string)"0" + std::to_string(date->tm_mon + 1) + "/";
+	else data += std::to_string(date->tm_mon + 1) + "/";
+
+	data += std::to_string(date->tm_year + 1900);
+
+	return data;
+}
+
+std::string sock::City(const char* data) {
+	vector<string> vdata = Tokenizer::split(data, SEP);
+	if (vdata.size() != 3) return SERV_SHUT;
+
+	if (!file::exists(PATH_WEATHER)) return SERV_SHUT;
+	if (!file::exists(PATH_CITY)) return SERV_SHUT;
+	file::csv dataWeather(PATH_WEATHER);
+	file::csv dataCity(PATH_CITY);
+
+	int row = -1;
+	std::string cmd = "CITY\t";
+	if (vdata[2] == "ALL") {
+		std::time_t t = std::time(0);
+		std::tm* now = std::localtime(&t);
+		for (int i = 0; i < 7; ++i) {
+			while (1) {
+				std::string date = ctime_to_string(now);
+
+				if (vdata[1] == "ALL") {
+					row = file::findWeather(dataWeather, row + 1, date.c_str());
+				}
+				else {
+					row = file::findWeather(dataWeather, row + 1, date.c_str(), vdata[1].c_str());
+				}
+				if (row == -1) break;
+
+				file::csv::line* tmp = &dataWeather.data[row];
+
+				cmd += file::findCity(dataCity, tmp->pdata[0]) + ',';
+				cmd += (string)tmp->pdata[1] + ',';
+				cmd += (string)tmp->pdata[2] + ',';
+				cmd += (string)tmp->pdata[3] + ',';
+				cmd += (string)tmp->pdata[4] + '\t';
+			}
+			now->tm_mday++;
+			mktime(now);
+		}
+	}
+	else while (1) {
+		if (vdata[1] == "ALL") {
+			row = file::findWeather(dataWeather, row + 1, vdata[2].c_str());
+		}
+		else {
+			row = file::findWeather(dataWeather, row + 1, vdata[2].c_str(), vdata[1].c_str());
+		}
+		if (row == -1) break;
+
+		file::csv::line* tmp = &dataWeather.data[row];
+		
+		cmd += file::findCity(dataCity, tmp->pdata[0]) + ',';
+		cmd += (string)tmp->pdata[1] + ',';
+		cmd += (string)tmp->pdata[2] + ',';
+		cmd += (string)tmp->pdata[3] + ',';
+		cmd += (string)tmp->pdata[4] + '\t';
+	}
+	cmd.pop_back();
+	return cmd;
 }
 
 bool sock::QConnect(SOCKET& s) {
@@ -272,11 +349,17 @@ bool sock::QLogin(SOCKET& s) {
 
 int sock::Handle(SOCKET& s) {
 	char* tmp = nullptr;
-	int Position = 0;	//0: user, 1: admin
 
-	Send(s, "WHAT ?");
+	Send(s, SERV_WAIT);
 	Recv(s, tmp);
 
+	if (is(tmp, "CITY")) {
+		Send(s, City(tmp).c_str());
+		delete tmp;
+		return 1;
+	}
+
+	delete tmp;
 	return 0;
 }
 

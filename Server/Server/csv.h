@@ -36,6 +36,8 @@ namespace file {
 
 	bool exists(const char* FILE);
 	csv::line* find(csv& file, const char* data1, const char* data2 = nullptr, bool status = FALSE);
+	int findWeather(csv& file, int startRow, const char* date, const char* city = nullptr);
+	std::string findCity(csv& file, const char* citycode);
 }
 
 #endif

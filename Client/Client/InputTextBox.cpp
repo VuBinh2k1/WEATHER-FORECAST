@@ -31,6 +31,10 @@ void InputTextBox::setColor(sf::Color text_color, sf::Color click_color, sf::Col
 	_unclick = unclick_color;
 }
 
+void InputTextBox::setText(std::string txt) {
+	m_data = txt;
+}
+
 bool InputTextBox::clicked(sf::RenderWindow* window) {
 	int coorMouse_x = sf::Mouse::getPosition(*window).x;
 	int coorMouse_y = sf::Mouse::getPosition(*window).y;
