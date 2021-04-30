@@ -51,6 +51,8 @@ namespace sock {
 	bool Login(const char* data, int& Position);
 	bool Register(const char* data);
 	std::string City(const char* data);
+	void City_ADD(const char* data);
+	void City_UPDATE(const char* data);
 
 	/// Q:questtion(send) - A:answer(recv, send back)
 	bool QConnect(SOCKET& s);

@@ -76,18 +76,23 @@ void ServerSFML::render() {
 	Log.close();
 
 	int start = DataLog.size() - min(10, DataLog.size());
+
+	Text textTime, textData;
+	textTime.setFont(font);
+	textData.setFont(font);
+
+	textTime.setCharacterSize(15);
+	textData.setCharacterSize(15);
+
+	textTime.setFillColor(Color::Yellow);
+	textData.setFillColor(Color::White);
 	for (int i = start; i < DataLog.size() ; ++i) {
-		Text textTime, textData;
-		textTime.setFont(font);
-		textData.setFont(font);
 		textTime.setString(DataLog[i].substr(0, 23));
 		textData.setString(DataLog[i].substr(24));
-		textTime.setCharacterSize(15);
-		textData.setCharacterSize(15);
-		textTime.setFillColor(Color::Yellow);
-		textData.setFillColor(Color::White);
+		
 		textTime.setPosition(130, 150 + 20 * (i - start));
 		textData.setPosition(320, 150 + 20 * (i - start));
+
 		window->draw(textTime);
 		window->draw(textData);
 	}
