@@ -72,6 +72,8 @@ unsigned int __stdcall ClientRecv(void* data) {
 
 		break;
 	}
+
+	sock::ClientSocket::Status = DISCONNECT;
 }
 
 /// Class /////////////////////////////////////////////////////////

@@ -12,6 +12,8 @@
 #define $BG_Regis		"..\\Data\\png\\register.png"
 #define $BG_Users		"..\\Data\\png\\user.png"
 #define $BG_Admin		"..\\Data\\png\\admin.png"
+#define $BG_Admin_newc	"..\\Data\\png\\admin_newcity.png"
+#define $BG_Admin_fore	"..\\Data\\png\\admin_forecast.png"
 
 using namespace sf;
 using namespace sock;
@@ -19,6 +21,7 @@ using namespace sock;
 class LoginSFML;
 class RegisterSFML;
 class UserSFML;
+class AdminSFML;
 
 /// Main Window
 class ClientSFML {
@@ -35,6 +38,7 @@ public:
 	LoginSFML* win01;
 	RegisterSFML* win02;
 	UserSFML* win03;
+	AdminSFML* win04;
 
 public:
 	ClientSFML();
@@ -101,3 +105,33 @@ public:
 
 	void render();
 };
+
+class AdminSFML {
+	RenderWindow* window;
+	Font font;
+
+	Picture background;
+	Button B_NEWCITY, B_FORECAST;
+
+	int func;	//0:[nothing] 1:[new city] 2:[forecast]
+
+	//[new city]
+	Picture BG_newcity;
+	InputTextBox m_ncity_code, m_ncity_name;
+	Button B_ADD;
+
+	//[forecast];
+	Picture BG_forecast;
+	Text t_date;
+	InputTextBox m_citycode, m_temp[7], m_humi[7], m_stat[7];
+	Button B_UPDATE;
+
+public:
+	AdminSFML();
+
+	void Init(ClientSFML* main);
+	void start();
+
+	void render();
+};
+

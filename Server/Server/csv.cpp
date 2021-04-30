@@ -70,19 +70,42 @@ bool file::exists(const char* FILE) {
 	return 1;
 }
 
-csv::line* file::find(csv& file, const char* data1, const char* data2, bool status) {
+void file::update(const char* FILE, int row, int col, const char* data) {
+	csv file(FILE);
+
+	std::ofstream os(FILE);
+	for (int j = 0; j < file.mark.columns; ++j) {
+		os << file.mark.pdata[j];
+		if (j < file.mark.columns - 1) os << ',';
+		else os << '\n';
+	}
+	for (int i = 0; i < file.rows; ++i) {
+		for (int j = 0; j < file.data[i].columns; ++j) {
+			if (i == row && j == col) {
+				os << data;
+			}
+			else os << file.data[i].pdata[j];
+
+			if (j < file.data[i].columns - 1) os << ',';
+			else os << '\n';
+		}
+	}
+	os.close();
+}
+
+int file::finduser(csv& file, const char* data1, const char* data2, bool status) {
 	for (int i = 0; i < file.rows; ++i) {
 		if (status && file.data[i].pdata[0][0] == '0') continue;
 		if (strcmp(file.data[i].pdata[1], data1) == 0) {
-			if (data2 == nullptr || strcmp(file.data[i].pdata[2], data2) == 0) return &file.data[i];
+			if (data2 == nullptr || strcmp(file.data[i].pdata[2], data2) == 0) return i;
 		}
 	}
-	return nullptr;
+	return -1;
 }
 
 int file::findWeather(csv& file, int startRow, const char* date, const char* city) {
 	for (int i = startRow; i < file.rows; ++i) {
-		
+		if (file.data[i].columns < 2) continue;
 		if (strcmp(file.data[i].pdata[1], date) == 0) {
 			if (city == nullptr || strcmp(file.data[i].pdata[0], city) == 0) 
 				return i;

@@ -18,7 +18,7 @@ class InputTextBox {
 	sf::Color _click, _unclick, _text;
 
 public:
-	InputTextBox(int maxlen = 30, int sztext = 30, bool hidetxt = 0);
+	void Init(int maxlen = 30, int sztext = 30, bool hidetxt = 0);
 
 	std::string getText();
 	bool size();

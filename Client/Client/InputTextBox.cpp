@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "InputTextBox.h"
 
-InputTextBox::InputTextBox(int maxlen, int sztext, bool hidetxt) {
+void InputTextBox::Init(int maxlen, int sztext, bool hidetxt) {
 	maxText = maxlen;
 	sizeText = sztext;
 	hideText = hidetxt;

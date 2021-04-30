@@ -42,12 +42,13 @@ unsigned int __stdcall ServClient(void* data) {
 	/// 
 	do {
 		if (!sock::QConnect(Client)) {
-			sock::newLog("Client disconnected 2: ", ClientID);
+			sock::newLog("Client disconnected: ", ClientID);
 			closesocket(Client);
 			return 0;
 		}
 	} while (sock::Handle(Client));
 
+	sock::newLog("Client disconnected: ", ClientID);
 	closesocket(Client);
 	return 0;
 }
@@ -103,12 +104,13 @@ void sock::newLog(const char* text, int num) {
 	std::time_t t = std::time(0);
 	std::tm* now = std::localtime(&t);
 
+	//*//log << "ok\n";
 	log << "[" << now->tm_year + 1900 << "/";
 	if (now->tm_mon < 9)
 		log << "0" << now->tm_mon + 1 << "/";
 	else log << now->tm_mon + 1 << "/";
 	if (now->tm_mday < 10)
-		log << "0" << now->tm_mday << "/";
+		log << "0" << now->tm_mday << "][";
 	else log << now->tm_mday << "][";
 
 	if (now->tm_hour < 10) 
@@ -120,12 +122,13 @@ void sock::newLog(const char* text, int num) {
 	if (now->tm_sec < 10)
 		log << "0" << now->tm_sec << "]: ";
 	else log << now->tm_sec << "]: ";
-
+	
 	log << text;
 	if (num != -1) {
 		log << num;
 	}
-	
+	//*/
+	//log << "1111/11/11][11:11:11] 222222222222222222";
 	log << "\n";
 	log.close();
 
@@ -173,18 +176,19 @@ bool sock::Login(const char* data, int& Position) {
 	//SHA256 funtion
 	string sh256password = sha256(vdata[2]);
 
-	file::csv::line* puser = nullptr;
+	int puser = -1;
 
-	if (puser = file::find(dataAccount, vdata[1].c_str(), sh256password.c_str())) {
+	if ((puser = file::finduser(dataAccount, vdata[1].c_str(), sh256password.c_str())) != -1) {
 
-		Position = is(puser->pdata[3], "admin");
+		Position = is(dataAccount.data[puser].pdata[3], "admin");
 		return 1;
 	}
 
-	if (puser = file::find(dataAccount, vdata[1].c_str(), "0")) {
+	if ((puser = file::finduser(dataAccount, vdata[1].c_str(), "0")) != -1) {
 		//Password reseted, confirm new password
+		file::update(PATH_ACCOUNT, puser, 2, sh256password.c_str());
 
-		Position = is(puser->pdata[3], "admin"); 
+		Position = is(dataAccount.data[puser].pdata[3], "admin");
 		return 1;
 	}
 
@@ -199,7 +203,7 @@ bool sock::Register(const char* data)
 	if (vdata[3] != vdata[2])return false;
 	file::csv dataAccount(PATH_ACCOUNT);
 
-	if (file::find(dataAccount, vdata[1].c_str()) != nullptr)
+	if (file::finduser(dataAccount, vdata[1].c_str()) != -1)
 	{
 		return false;
 	}
@@ -238,7 +242,7 @@ std::string sock::City(const char* data) {
 
 	int row = -1;
 	std::string cmd = "CITY\t";
-	if (vdata[2] == "ALL") {
+	if (vdata[2] == "next 7 days") {
 		std::time_t t = std::time(0);
 		std::tm* now = std::localtime(&t);
 		for (int i = 0; i < 7; ++i) {
@@ -284,6 +288,55 @@ std::string sock::City(const char* data) {
 	}
 	cmd.pop_back();
 	return cmd;
+}
+
+void sock::City_ADD(const char* data) {
+	vector<string> vdata = Tokenizer::split(data, SEP);
+	if (vdata.size() != 3) return;
+
+	if (!file::exists(PATH_CITY)) return;
+	file::csv dataCity(PATH_CITY);
+
+	if (file::findCity(dataCity, vdata[1].c_str()) == "Unknow") {
+		std::ofstream out(PATH_CITY, std::ios::app);
+		out << vdata[1] << "," << vdata[2] << "\n";
+		out.close();
+	}
+}
+
+void sock::City_UPDATE(const char* data) {
+	vector<string> vdata = Tokenizer::split(data, SEP);
+
+	if (!file::exists(PATH_CITY)) return;
+	if (!file::exists(PATH_WEATHER)) return;
+	file::csv dataCity(PATH_CITY);
+	file::csv dataWeather(PATH_WEATHER);
+
+	
+
+	for (int i = 1; i < vdata.size(); ++i) {
+		vector<string> tmp = Tokenizer::split(vdata[i], ",");
+		if (file::findCity(dataCity, tmp[0].c_str()) == "Unknow") return;
+
+		int row = file::findWeather(dataWeather, 0, tmp[1].c_str(), tmp[0].c_str());
+		if (row != -1) {
+			for (int j = 2; j < max(5, min(5, tmp.size())); ++j) {
+				if (tmp[j] == "#") continue;
+				file::update(PATH_WEATHER, row, j, tmp[j].c_str());
+			}
+		}
+		else {
+			if (tmp[2] == "#" && tmp[3] == "#" && tmp[4] == "#") continue;
+
+			std::ofstream out(PATH_WEATHER, std::ios::app);
+			for (int j = 0; j < max(5, min(5, tmp.size())); ++j) {
+				out << tmp[j];
+				if (j < min(5, tmp.size() - 1)) out << ",";
+				else out << "\n";
+			}
+			out.close();
+		}
+	}
 }
 
 bool sock::QConnect(SOCKET& s) {
@@ -342,7 +395,7 @@ bool sock::QLogin(SOCKET& s) {
 		return 0;
 	}
 
-	printf("%s\n", tmp);
+	//printf("%s\n", tmp);
 	delete tmp;
 	return 0;
 }
@@ -355,6 +408,18 @@ int sock::Handle(SOCKET& s) {
 
 	if (is(tmp, "CITY")) {
 		Send(s, City(tmp).c_str());
+		delete tmp;
+		return 1;
+	}
+
+	if (is(tmp, "CITY_NEW")) {
+		City_ADD(tmp);
+		delete tmp;
+		return 1;
+	}
+
+	if (is(tmp, "CITY_UPDATE")) {
+		City_UPDATE(tmp);
 		delete tmp;
 		return 1;
 	}
