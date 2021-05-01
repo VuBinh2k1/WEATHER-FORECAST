@@ -8,6 +8,13 @@ unsigned int __stdcall ClientRecv(void* data) {
 
 	char* tmp = nullptr;
 
+	sock::Send(Client, "ARE_U_SERVER_FORECAST");
+	sock::Recv(Client, tmp);
+	if (!sock::is(tmp, "YES!")) {
+		sock::ClientSocket::Status = DISCONNECT;
+		return 0;
+	}
+
 	while (1) {
 		sock::Recv(Client, tmp);
 		//printf("Server: %s\n", tmp);
@@ -74,20 +81,21 @@ unsigned int __stdcall ClientRecv(void* data) {
 	}
 
 	sock::ClientSocket::Status = DISCONNECT;
+	return 0;
 }
 
 /// Class /////////////////////////////////////////////////////////
 int sock::ClientSocket::Status = DISCONNECT;
+std::string sock::ClientSocket::serv_addr = $SERV_ADDR;
 std::string sock::ClientSocket::cmd_to_gui = "";
 std::string sock::ClientSocket::cmd_from_gui = "";
 
 sock::ClientSocket::ClientSocket() {
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(8612);
-	addr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+	addr.sin_port = htons($SERV_PORT);
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData)) {
-		printf("WSA startup failed");
+		printf("WSA startup failed\n");
 		return;
 	}
 
@@ -99,14 +107,18 @@ sock::ClientSocket::~ClientSocket() {
 }
 
 bool sock::ClientSocket::Connect() {
+
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == INVALID_SOCKET) {
-		printf("Invalid socket");
+		printf("Invalid socket\n");
 		return 0;
 	}
 
+	addr.sin_addr.S_un.S_addr = inet_addr(serv_addr.c_str());
+
 	if (connect(sock, (SOCKADDR*)&addr, sizeof(sockaddr_in))) {
-		printf("Connect failed %u", WSAGetLastError());
+		Status = DISCONNECT;
+		printf("Connect failed %u\n", WSAGetLastError());
 		return 0;
 	}
 	

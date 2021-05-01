@@ -5,6 +5,9 @@
 #pragma comment(lib, "ws2_32.lib" )
 #include <string>
 
+#define $SERV_ADDR	"127.0.0.1"
+#define $SERV_PORT	8612
+
 #define EXIT		"EXIT"
 #define SERV_LOGIN	"USER"
 #define SERV_USER	"LOGIN_USER"
@@ -25,10 +28,9 @@ namespace sock {
 		sockaddr_in addr;
 		SOCKET sock, client;
 
-		
-
 	public:
 		static int Status;
+		static std::string serv_addr;
 		static std::string cmd_to_gui;
 		static std::string cmd_from_gui;
 
