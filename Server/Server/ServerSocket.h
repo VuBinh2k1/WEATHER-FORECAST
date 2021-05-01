@@ -5,6 +5,9 @@
 #pragma comment(lib, "ws2_32.lib" )
 #include <ctime>
 
+#define $SERV_ADDR	"127.0.0.1"
+#define $SERV_PORT	8612
+
 #define EXIT		"EXIT"
 #define SERV_LOGIN	"USER"
 #define SERV_USER	"LOGIN_USER"

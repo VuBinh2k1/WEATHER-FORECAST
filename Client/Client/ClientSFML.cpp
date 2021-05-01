@@ -46,6 +46,19 @@ void ClientSFML::Init(RenderWindow* _win) {
 	}//*/
 	background.setTexture($Background);
 
+	/// Disconnect window
+	isDisconect = 0;
+	BG_disconnect.setTexture($BG_Dconnect);
+	BG_disconnect.setPosition(std::pair<int, int>(362, 226));
+
+	m_Link.Init(40, 25);
+	m_Link.setPosition(506, 316);
+	m_Link.setSize(421, 45);
+	m_Link.setText($SERV_ADDR);
+
+	B_CONNECT.setPosition(615, 380);
+	B_CONNECT.setSize(138, 34);
+
 	// Init Member window
 	win01->Init(this);
 	win02->Init(this);
@@ -56,8 +69,66 @@ void ClientSFML::Init(RenderWindow* _win) {
 void ClientSFML::start() {
 	render();
 
+	int selectedBOX = 0;
 	while (window->isOpen()) {
 		Event e;
+		
+		//printf("SER: %d\n", sock::ClientSocket::Status);
+		if (sock::ClientSocket::Status == DISCONNECT) {
+			if (isDisconect == 0) {
+				isDisconect = 1;
+				render();
+			}
+
+			if (window->pollEvent(e)) {
+				if (e.type == Event::Closed || (e.type == Event::KeyPressed && e.key.code == Keyboard::Escape)) {
+					window->close();
+					return;
+				}
+				if (e.type == Event::MouseButtonReleased) {
+					selectedBOX = 0;
+
+					if (m_Link.start(window)) {
+						selectedBOX = 1;
+					}
+					if (B_CONNECT.clicked(window)) {
+						if (m_Link.size() == 0) {
+							m_Link.setText($SERV_ADDR);
+						}
+						sock::ClientSocket::serv_addr = m_Link.getText();
+						
+						isDisconect = 0;
+						render();
+
+
+						sock.Connect();
+						continue;
+					}
+				}
+				if (e.type == Event::TextEntered) {
+					if (e.text.unicode == 13) {
+						if (m_Link.size() == 0) {
+							m_Link.setText($SERV_ADDR);
+						}
+						sock::ClientSocket::serv_addr = m_Link.getText();
+
+						isDisconect = 0;
+						render();
+
+
+						sock.Connect();
+						continue;
+					}
+					if (selectedBOX == 1) {
+						m_Link.input(window, e);
+					}
+					render();
+				}
+			}
+			continue;
+		}
+
+
 		if (window->pollEvent(e)) {
 			if (e.type == Event::Closed || (e.type == Event::KeyPressed && e.key.code == Keyboard::Escape)) {
 				window->close();
@@ -79,12 +150,12 @@ void ClientSFML::start() {
 		if (sock::ClientSocket::cmd_to_gui == SERV_USER) {
 			sock::ClientSocket::cmd_to_gui.clear();
 			win03->start();
-			break;
+			continue;
 		}
 		if (sock::ClientSocket::cmd_to_gui == SERV_ADMIN) {
 			sock::ClientSocket::cmd_to_gui.clear();
 			win04->start();
-			break;
+			continue;
 		}
 
 	}
@@ -95,7 +166,10 @@ void ClientSFML::start() {
 void ClientSFML::render() {
 	window->clear();
 	background.draw(window);
-
+	if (isDisconect) {
+		BG_disconnect.draw(window);
+		m_Link.draw(window);
+	}
 	window->display();
 }
 
@@ -132,7 +206,7 @@ void LoginSFML::start() {
 	render();
 
 	int selectedBOX = 0;
-	while (window->isOpen()) {
+	while (window->isOpen() && sock::ClientSocket::Status == CONNECTING) {
 		Event e;
 		if (window->pollEvent(e)) {
 			if (e.type == Event::Closed || (e.type == Event::KeyPressed && e.key.code == Keyboard::Escape)) {
@@ -238,7 +312,7 @@ void RegisterSFML::start() {
 	render();
 
 	int selectedBOX = 0;
-	while (window->isOpen()) {
+	while (window->isOpen() && sock::ClientSocket::Status == CONNECTING) {
 		Event e;
 		if (window->pollEvent(e)) {
 			if (e.type == Event::Closed || (e.type == Event::KeyPressed && e.key.code == Keyboard::Escape)) {
@@ -383,7 +457,7 @@ void UserSFML::start() {
 	render();
 
 	int selectedBOX = 0;
-	while (window->isOpen()) {
+	while (window->isOpen() && sock::ClientSocket::Status == CONNECTING) {
 		Event e;
 		if (window->pollEvent(e)) {
 			if (e.type == Event::Closed || (e.type == Event::KeyPressed && e.key.code == Keyboard::Escape)) {
@@ -569,7 +643,7 @@ void AdminSFML::start() {
 
 	//*/
 	int selectedBOX = 0;
-	while (window->isOpen()) {
+	while (window->isOpen() && sock::ClientSocket::Status == CONNECTING) {
 		Event e;
 		if (window->pollEvent(e)) {
 			if (e.type == Event::Closed || (e.type == Event::KeyPressed && e.key.code == Keyboard::Escape)) {

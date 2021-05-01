@@ -8,6 +8,7 @@
 #define $Font			"..\\Data\\ClearSans-Bold.ttf"
 #define $Weather		"..\\Data\\png\\icon\\"
 #define $Background		"..\\Data\\png\\background.png"
+#define $BG_Dconnect	"..\\Data\\png\\disconnect.png"
 #define $BG_Login		"..\\Data\\png\\login.png"
 #define $BG_Regis		"..\\Data\\png\\register.png"
 #define $BG_Users		"..\\Data\\png\\user.png"
@@ -32,6 +33,11 @@ public:
 	Font font;
 	//Texture weather_icon[7];
 	Picture background;
+
+	bool isDisconect;
+	Picture BG_disconnect;
+	InputTextBox m_Link;
+	Button B_CONNECT;
 
 public:
 	static int Log_Reg;

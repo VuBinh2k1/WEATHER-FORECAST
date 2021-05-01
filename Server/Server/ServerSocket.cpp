@@ -30,6 +30,14 @@ unsigned int __stdcall ServClient(void* data) {
 	DWORD ClientID = GetCurrentThreadId();
 	sock::newLog("Client connected: ", ClientID);
 
+	/// Clent checking...
+	char* tmp = nullptr;
+	sock::Recv(Client, tmp);
+	if (sock::is(tmp, "ARE_U_SERVER_FORECAST")) {
+		sock::Send(Client, "YES!");
+	}
+	delete tmp;
+
 	/// Login...
 	do {
 		if (!sock::QConnect(Client)) {
@@ -59,8 +67,8 @@ bool sock::ServerSocket::newLog = 0;
 
 sock::ServerSocket::ServerSocket() {
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(8612);
-	addr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+	addr.sin_port = htons($SERV_PORT);
+	addr.sin_addr.S_un.S_addr = inet_addr($SERV_ADDR);
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData)) {	//2.2
 		sock::newLog("WSA startup failed");
@@ -363,6 +371,10 @@ bool sock::QLogin(SOCKET& s) {
 	Send(s, SERV_LOGIN);
 	Recv(s, tmp);
 
+	if (sock::ServerSocket::Status == SHUTDOWN) {
+		return 0;
+	}
+
 	if (is(tmp, "LOG")) {
 		//printf("Login request: ");
 		if (Login(tmp, Position)) {
@@ -405,6 +417,10 @@ int sock::Handle(SOCKET& s) {
 
 	Send(s, SERV_WAIT);
 	Recv(s, tmp);
+
+	if (sock::ServerSocket::Status == SHUTDOWN) {
+		return 0;
+	}
 
 	if (is(tmp, "CITY")) {
 		Send(s, City(tmp).c_str());
