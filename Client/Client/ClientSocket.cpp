@@ -62,9 +62,6 @@ unsigned int __stdcall ClientRecv(void* data) {
 
 			sock::Send(Client, ClientMsg.c_str());
 			continue;
-			// ADMIN:
-			// UPDATE_CITY <cityID> <cityName>
-			// UPDATE_DATA <cityID> <date> <weather info>
 		}
 
 		if (sock::is(tmp, "CITY")) {
@@ -72,8 +69,11 @@ unsigned int __stdcall ClientRecv(void* data) {
 
 			/// Time for GUI build data
 			while (sock::ClientSocket::cmd_from_gui.empty()) Sleep(500);
+
+			std::string ClientMsg = sock::ClientSocket::cmd_from_gui;
 			sock::ClientSocket::cmd_from_gui.clear();
 
+			sock::Send(Client, ClientMsg.c_str());
 			continue;
 		}
 

@@ -51,7 +51,7 @@ void ClientSFML::Init(RenderWindow* _win) {
 	BG_disconnect.setTexture($BG_Dconnect);
 	BG_disconnect.setPosition(std::pair<int, int>(362, 226));
 
-	m_Link.Init(40, 25);
+	m_Link.Init(28, 25);
 	m_Link.setPosition(506, 316);
 	m_Link.setSize(421, 45);
 	m_Link.setText($SERV_ADDR);
@@ -405,6 +405,9 @@ UserSFML::UserSFML() {
 	B_Search.setPosition(55, 637);
 	B_Search.setSize(127, 39);
 
+	B_Logout.setPosition(1301, 703);
+	B_Logout.setSize(45, 45);
+
 	// Row[0]: CITY
 	show_row = 1;
 	t_city.setFont(font);
@@ -451,7 +454,6 @@ std::string curDay() {
 }
 
 void UserSFML::start() {
-	ClientSFML::Log_Reg = -1;
 	m_city_code.setText("ALL");
 	m_date.setText(curDay());
 	render();
@@ -471,7 +473,7 @@ void UserSFML::start() {
 				show.clear();
 				show = Tokenizer::split(data, SEP);
 
-				printf("Data: %s\n", data.c_str());
+				//printf("Data: %s\n", data.c_str());
 				render();
 
 				sock::ClientSocket::cmd_to_gui.clear();
@@ -480,6 +482,13 @@ void UserSFML::start() {
 
 			if (sock::ClientSocket::cmd_to_gui == SERV_WAIT) {
 				if (e.type == Event::MouseButtonReleased) {
+					if (B_Logout.clicked(window)) {
+						sock::ClientSocket::cmd_to_gui.clear();
+						sock::ClientSocket::cmd_from_gui = CLIE_LOGOUT;
+
+						break;
+					}
+
 					if (m_city_code.size() == 0) {
 						m_city_code.setText("ALL");
 					}
@@ -506,7 +515,6 @@ void UserSFML::start() {
 						sock::ClientSocket::cmd_to_gui.clear();
 						sock::ClientSocket::cmd_from_gui = cmd;
 						continue;
-						//std::cout << sock::ClientSocket::cmd_from_gui;
 					}
 					render();
 				}
@@ -567,6 +575,10 @@ AdminSFML::AdminSFML() {
 	B_NEWCITY.setSize(182, 41);
 	B_FORECAST.setPosition(26, 435);
 	B_FORECAST.setSize(182, 41);
+
+	B_Logout.setPosition(1301, 703);
+	B_Logout.setSize(45, 45);
+
 
 	func = 0;
 
@@ -653,6 +665,13 @@ void AdminSFML::start() {
 
 			if (sock::ClientSocket::cmd_to_gui == SERV_WAIT) {
 				if (e.type == Event::MouseButtonReleased) {
+					if (B_Logout.clicked(window)) {
+						sock::ClientSocket::cmd_to_gui.clear();
+						sock::ClientSocket::cmd_from_gui = CLIE_LOGOUT;
+
+						break;
+					}
+
 					if (B_NEWCITY.clicked(window)) {
 						func = 1;
 						render();

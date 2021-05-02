@@ -14,6 +14,7 @@
 #define SERV_ADMIN	"LOGIN_ADMIN"
 #define SERV_WAIT	"WHAT ?"
 #define SERV_SHUT	"SHUTDOWN"
+#define CLIE_LOGOUT	"LOGOUT"
 
 #define CONNECTING	1
 #define DISCONNECT	0

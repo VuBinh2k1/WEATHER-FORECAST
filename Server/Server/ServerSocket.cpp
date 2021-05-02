@@ -38,24 +38,30 @@ unsigned int __stdcall ServClient(void* data) {
 	}
 	delete tmp;
 
-	/// Login...
-	do {
-		if (!sock::QConnect(Client)) {
-			sock::newLog("Client disconnected: ", ClientID);
-			closesocket(Client);
-			return 0;
-		}
-	} while (!sock::QLogin(Client));
+	
+	int Client_Logout = 2;
+	// 0:[Handle end], 
+	// 1:[Handle continue],
+	// 2:[Handle end Login start]
+	while (Client_Logout == 2) {
+		/// Login...
+		do {
+			if (!sock::QConnect(Client)) {
+				sock::newLog("Client disconnected: ", ClientID);
+				closesocket(Client);
+				return 0;
+			}
+		} while (!sock::QLogin(Client));
 
-	/// 
-	do {
-		if (!sock::QConnect(Client)) {
-			sock::newLog("Client disconnected: ", ClientID);
-			closesocket(Client);
-			return 0;
-		}
-	} while (sock::Handle(Client));
-
+		/// 
+		do {
+			if (!sock::QConnect(Client)) {
+				sock::newLog("Client disconnected: ", ClientID);
+				closesocket(Client);
+				return 0;
+			}
+		} while ((Client_Logout = sock::Handle(Client)) == 1);
+	}
 	sock::newLog("Client disconnected: ", ClientID);
 	closesocket(Client);
 	return 0;
@@ -425,8 +431,14 @@ int sock::Handle(SOCKET& s) {
 	if (is(tmp, "CITY")) {
 		Send(s, City(tmp).c_str());
 		delete tmp;
+
+		Recv(s, tmp);
+		//if (is(tmp, "OK")) { }
+
+		delete tmp;
 		return 1;
 	}
+
 
 	if (is(tmp, "CITY_NEW")) {
 		City_ADD(tmp);
@@ -438,6 +450,11 @@ int sock::Handle(SOCKET& s) {
 		City_UPDATE(tmp);
 		delete tmp;
 		return 1;
+	}
+
+	if (is(tmp, CLIE_LOGOUT)) {
+		delete tmp;
+		return 2;
 	}
 
 	delete tmp;

@@ -16,6 +16,7 @@
 #define SERV_SHUT	"SHUTDOWN"
 #define CLIE_LOGIN	"LOG"
 #define CLIE_SIGNIN	"REG"
+#define CLIE_LOGOUT	"LOGOUT"
 
 #define PATH_ACCOUNT	"..\\Data\\account.csv"
 #define PATH_WEATHER	"..\\Data\\data.csv"

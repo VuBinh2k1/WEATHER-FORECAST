@@ -97,7 +97,7 @@ class UserSFML {
 
 	Picture background;
 	InputTextBox m_city_code, m_date;
-	Button B_Search;
+	Button B_Search, B_Logout;
 
 	int show_row;
 	Text t_city, t_date, t_temp, t_humi, t_stat;
@@ -117,7 +117,7 @@ class AdminSFML {
 	Font font;
 
 	Picture background;
-	Button B_NEWCITY, B_FORECAST;
+	Button B_NEWCITY, B_FORECAST, B_Logout;
 
 	int func;	//0:[nothing] 1:[new city] 2:[forecast]
 
