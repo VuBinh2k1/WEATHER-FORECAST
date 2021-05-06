@@ -15,3 +15,12 @@ End Project Date:
   - **Email:** lethanhkhoi081001@gmail.com
 ## Project Planner
 - [x] **Setup and using SFML library**
+- [x] **Setup winsock.h and init library**
+- [x] **Connection: Server(1) - Client(n) + multithread**
+- [x] **Checking connection**
+- [x] **Login and Singin**
+- [x] **User interfaces**
+- [x] **Admin interfaces**
+- [x] **Data using file.csv**
+- [x] **Logout and return Login interfaces (Client) and Shutdown (Server)**
+
